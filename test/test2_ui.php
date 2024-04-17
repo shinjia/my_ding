@@ -1,5 +1,5 @@
 <?php
-/***** 測試使用者訂購畫面，訂購後存檔 *****/
+/***** 同 test2，但強化前端操作的功能 (JavaScript) *****/
 
 $restcode = 'xxx'; 
 $restdata = '****假設這裡是關於餐廳的各項資料****';
@@ -48,8 +48,13 @@ foreach($a_menu as $value) {
         <td>{$f_price}</td>
         <td>{$f_note}</td>
         <td>
-            <!--<input type="hidden" id="price_{$i}" value="{$f_price}">-->
-            <input type="text" name="amt[{$f_code}]" id="amt_{$i}" value="0" size="1" >
+            <input type="hidden" id="price_{$i}" value="{$f_price}">
+            <input type="text" name="amt[{$f_code}]" id="amt_{$i}" value="0" readonly size="1" >
+        </td>
+        <td>
+            <button onclick="add('amt_{$i}', 1);">加</a>
+            <button onclick="add('amt_{$i}', -1);">減</a>
+            
         </td>
         <td><input type="text" name="note[{$f_code}]" value="" size="4"></td>
     </tr>
@@ -61,6 +66,8 @@ HEREDOC;
 $data .= <<< HEREDOC
 </table>
 <p>
+自動試算總金額：<input type="text" name="price_auto" id="price_auto" readonly size="4">
+<br>
 確認輸入總金額：<input type="text" name="price_user" required size="4">
 </p>
 <p>
@@ -92,6 +99,38 @@ $html = <<< HEREDOC
     {$data}
     </div>
 
+<script>
+function add(_id, _cnt) {
+    event.preventDefault();  // 取消按鈕的預設提交行為
+    let obj = document.getElementById(_id);
+    // 轉換當前值為數字並增加 _cnt
+    let new_value = parseInt(obj.value) + _cnt;
+    if(new_value<0) { new_value=0; }
+    obj.value = new_value;
+    calc_total();
+}
+
+function calc_total() {
+    let total = 0;
+    let i=0;
+    // 迴圈遍歷直到元素不存在為止
+    while(document.getElementById('price_'+i) && document.getElementById('amt_'+i)) {
+        // 獲取 price 和 amt 的值
+        var price = parseInt(document.getElementById('price_'+i).value);
+        var amt = parseInt(document.getElementById('amt_'+i).value);
+        // 計算乘積並累加到總額
+        total += price * amt;
+        
+        // 變更整列的顏色
+        bcolor = (amt!=0) ? '#FFFFAA' : '';
+        document.getElementById('row_'+i).style.backgroundColor=bcolor;
+
+        // 移至下一對元素
+        i++;
+    }
+    document.getElementById('price_auto').value = total;
+}
+</script>
 </body>
 </html>
 HEREDOC;
